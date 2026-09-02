@@ -59,22 +59,7 @@
   .touch{bottom:1.8vh;z-index:15}.shift{height:112px}.shift button{background:linear-gradient(#3b4248,#15191d);border:1px solid #777f85;box-shadow:inset 0 1px #ffffff55,0 3px 5px #0007}.shift button:active{background:var(--race-red)}.pedal{height:120px;background:linear-gradient(100deg,#383d41 0 22%,#111 23% 28%,#555b60 29% 46%,#111 47% 53%,#555b60 54% 72%,#111 73% 78%,#33383c 79%);border:5px solid #d6dadc;outline:3px solid #474e53;color:white;text-shadow:0 2px #000;box-shadow:6px 8px 12px #0008,inset 0 0 18px #000}@media(max-width:750px){.hud{grid-template-columns:112px 84px 58px 1fr}.dial{transform:scale(.72)}#speed{width:72px;height:72px;font-size:27px}.hud>div:nth-child(2) small{margin-top:-20px}.progress{padding:9px}.msg{top:7%}}
   `;
 
-  const detailedCar=(c,id)=>`<svg viewBox="0 0 500 180" aria-hidden="true">
-    <defs><linearGradient id="paint-${id}" x2="0" y2="1"><stop stop-color="#f3fff7"/><stop offset=".28" stop-color="${c}"/><stop offset=".68" stop-color="${c}"/><stop offset="1" stop-color="#173c2b"/></linearGradient><linearGradient id="glass-${id}" x2="0" y2="1"><stop stop-color="#79919d"/><stop offset="1" stop-color="#141e28"/></linearGradient></defs>
-    <ellipse cx="252" cy="166" rx="222" ry="9" fill="#080b0d" opacity=".35"/>
-    <path d="M22 141 Q13 122 29 109 Q43 101 79 96 C116 79 128 48 174 43 C224 36 273 40 302 55 Q333 75 357 95 C390 97 450 104 470 119 Q483 129 479 149 Q468 158 446 156 L433 155 C438 99 362 99 362 155 L146 155 C150 98 73 98 76 155 L40 155 Q25 154 22 141Z" fill="url(#paint-${id})" stroke="#14291e" stroke-width="2"/>
-    <path d="M108 95 Q138 59 176 54 Q196 51 214 52 L214 95Z M225 52 Q269 51 292 63 Q316 78 335 95 L225 95Z" fill="url(#glass-${id})" stroke="#26373c" stroke-width="3"/>
-    <path d="M123 88 Q150 64 177 61 L202 59 M236 58 Q268 59 282 66" fill="none" stroke="#d9eef6" stroke-width="3" opacity=".6"/>
-    <path d="M33 112 Q207 100 347 106 Q422 108 459 123" fill="none" stroke="#fff" stroke-width="3" opacity=".38"/>
-    <path d="M220 102 L217 139 Q216 145 229 145 L345 145 Q350 129 346 108 M151 149 H357" fill="none" stroke="#102d1d" opacity=".45" stroke-width="2"/>
-    <rect x="232" y="110" width="21" height="4" rx="2" fill="#243b30"/>
-    <path d="M442 116 Q466 119 471 130 L443 128 Q437 125 442 116Z" fill="#e9f6ff"/><path d="M23 116 L48 111 L46 124 L21 128Z" fill="#cd2736"/>
-    <path d="M451 143 H478 M24 143 H61" stroke="#1b252b" stroke-width="6" stroke-linecap="round"/>
-    ${[111,398].map(x=>`<g><circle cx="${x}" cy="145" r="31" fill="#11151a" stroke="#050607" stroke-width="3"/><circle cx="${x}" cy="145" r="22" fill="#c6d0d7" stroke="#65727b" stroke-width="2"/><circle cx="${x}" cy="145" r="16" fill="#303e47"/>${[0,60,120].map(a=>`<path d="M${x-18} 145 H${x+18}" stroke="#dce4e9" stroke-width="5" transform="rotate(${a} ${x} 145)"/>`).join('')}<circle cx="${x}" cy="145" r="6" fill="#8799a4"/></g>`).join('')}
-  </svg>`;
-  heroCar.innerHTML=detailedCar('#39d66f','hero');
-  playerCar.innerHTML=detailedCar('#39d66f','player');
-  cpuCar.innerHTML=detailedCar('#b8c0c5','cpu');
+  // The garage module renders the selected pixel sprite; no interim legacy car.
   style.textContent+=`@media(max-height:520px) and (orientation:landscape){.bar{height:40px;font-size:11px}.bar:after{display:none}.track{height:40vh}.car{width:32vw}.cpu{width:27vw}.hud{height:25vh;padding:3px 4vw;grid-template-columns:95px 75px 55px 1fr;gap:12px}.dial{transform:scale(.55);transform-origin:left center}.hud>div:nth-child(2) small{font-size:9px}.progress{padding:7px 12px}.progress i{height:9px;margin:3px}.progress small{font-size:9px}.touch{bottom:8px}.shift{height:88px;width:154px}.pedal{height:91px;width:110px;font-size:12px}.key-hints{transform:scale(.8);transform-origin:right center}.msg{top:48px;font-size:14px;white-space:nowrap;padding:6px 12px}.tree{transform:scale(.65);transform-origin:top right}.hud b{font-size:30px}}`;
   style.textContent+=`.bar button{background:#222930;border:1px solid #707980;border-radius:4px;padding:6px 12px;color:#f3f5f6;font-weight:700}.cpu{opacity:1}.hud>div:nth-child(2){width:104px}.hud>div:nth-child(3){width:68px}@media(max-width:750px){.hud>div:nth-child(2){width:72px}.hud>div:nth-child(3){width:58px}#gear{width:58px}}`;
   // Anchor each car to its lane surface, independent of viewport width.
