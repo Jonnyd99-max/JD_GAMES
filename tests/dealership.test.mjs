@@ -11,7 +11,7 @@ test('five classes each contain five unique cars',()=>{
   for(const cls of CLASSES)assert.equal(CARS.filter(c=>c.classId===cls.id).length,5);
 });
 test('existing car starts owned and selected with initial credits',()=>{
-  assert.deepEqual(normaliseSave(),{version:1,credits:STARTING_CREDITS,owned:[STARTER_ID],selected:STARTER_ID,tuning:{}});
+  assert.deepEqual(normaliseSave(),{version:1,credits:STARTING_CREDITS,owned:[STARTER_ID],selected:STARTER_ID,tuning:{},championship:{wins:[]}});
 });
 test('invalid saves are normalised without trusting unknown ownership',()=>{
   const save=normaliseSave({credits:-10,owned:['missing','roadster-0','roadster-0'],selected:'super-4'});

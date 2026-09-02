@@ -55,3 +55,7 @@ test('a new race requests the selected garage car',()=>{
   const s=scene();vm.runInContext('startRace()',s.context);
   assert.equal(s.events[0].type,'jd:race-start');
 });
+test('opponent victory preserves the actual player position and records a loss',()=>{
+ const s=scene();Object.assign(s.context.state,{phase:'GO',dist:250,cpu:402.336,raceWin:false});
+ vm.runInContext('finish()',s.context);assert.equal(s.context.state.dist,250);assert.equal(s.events[0].detail.win,false);
+});

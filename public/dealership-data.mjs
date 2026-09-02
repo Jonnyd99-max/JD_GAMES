@@ -59,7 +59,13 @@ export function normaliseSave(raw){
   const owned=[...new Set([STARTER_ID,...(Array.isArray(input.owned)?input.owned:[])])].filter(id=>getCar(id));
   return {version:1,credits:Number.isSafeInteger(input.credits)&&input.credits>=0?input.credits:STARTING_CREDITS,
     owned,selected:owned.includes(input.selected)?input.selected:STARTER_ID,
-    tuning:Object.fromEntries(owned.filter(id=>input.tuning?.[id]).map(id=>[id,cleanTune(input.tuning[id])]))};
+    tuning:Object.fromEntries(owned.filter(id=>input.tuning?.[id]).map(id=>[id,cleanTune(input.tuning[id])])),
+    championship:{wins:cleanRaceWins(input.championship?.wins)}};
+}
+function cleanRaceWins(raw){
+ const supplied=new Set(Array.isArray(raw)?raw:[]),wins=[];
+ for(const cls of CLASSES){const cars=CARS.filter(c=>c.classId===cls.id);const completed=cars.filter(c=>supplied.has(c.id));wins.push(...completed.map(c=>c.id));if(completed.length!==cars.length)break}
+ return wins;
 }
 export function purchaseCar(save,id){
   const car=getCar(id),current=normaliseSave(save);

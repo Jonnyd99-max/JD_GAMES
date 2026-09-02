@@ -13,7 +13,7 @@ test('selling a car removes its upgrades and repurchasing cannot reclaim them fr
 test('invalid saved stages and paint are discarded',()=>{assert.deepEqual(cleanTune({engine:99,wheels:-1,paint:'<script>',nitro:Infinity}),cleanTune());const s=normaliseSave({tuning:{'super-0':{engine:3},'starter-0':{engine:3}}});assert.equal(s.tuning['super-0'],undefined);assert.equal(s.tuning['starter-0'].engine,3)});
 test('nitro gives exactly two seconds per bottle and no idle consumption',()=>{for(const charge of [2,4]){let remaining=charge,totalBoost=0;for(let i=0;i<500;i++){const r=tickNitro(remaining,.017,true);totalBoost+=(r.multiplier-1)*.017;remaining=r.remaining}assert.equal(remaining,0);assert.ok(Math.abs(totalBoost-charge*.65)<1e-8);assert.equal(tickNitro(charge,60,false).remaining,charge)}});
 
-function race(){
+export function race(){
  const elements=new Map(),handlers=new Map();
  const element=()=>({style:{setProperty(k,v){this[k]=v}},classList:{add(){},remove(){},toggle(){},contains(){return false}},innerHTML:'',textContent:'',offsetLeft:90,offsetWidth:300,clientWidth:1280,appendChild(){},after(){},insertBefore(){},setAttribute(){},setPointerCapture(){},querySelector(){return element()}});
  const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id)};

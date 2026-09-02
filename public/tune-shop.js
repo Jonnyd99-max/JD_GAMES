@@ -1,5 +1,6 @@
 import {PARTS,cleanTune,tunedCar,buyPart,tickNitro} from './tuning-data.mjs';
-import {getCar,credits,carArt,selectCar} from './dealership-data.mjs';
+const garageUrl=new URL('./dealership-data.mjs',import.meta.url);garageUrl.search=new URL(import.meta.url).search;
+const {getCar,credits,carArt,selectCar}=await import(garageUrl.href);
 import {customizeCars} from './car-customizer.mjs';
 import {isVisualPart,previewPart} from './tune-preview.mjs';
 export function createTuneShop(api){

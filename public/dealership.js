@@ -4,9 +4,13 @@ const {CLASSES,CARS,STARTER_ID,SAVE_KEY,getCar,credits,normaliseSave,purchaseCar
 const {tunedCar}=await import(assetUrl('tuning-data.mjs'));
 const {customizeCars}=await import(assetUrl('car-customizer.mjs'));
 const {createTuneShop}=await import(assetUrl('tune-shop.js'));
+const {createChampionship}=await import(assetUrl('championship.js'));
+const {createHowToPlay}=await import(assetUrl('how-to-play.js'));
+const {recordChampionshipWin}=await import(assetUrl('championship-data.mjs'));
 const css=document.createElement('link');css.rel='stylesheet';css.href=assetUrl('dealership.css');document.head.appendChild(css);
 
 let garageSave=normaliseSave(),storageError='',activeClass='starter',selectedId=STARTER_ID,garageId=STARTER_ID,mode='dealership';
+let championship;
 try{garageSave=normaliseSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch{storageError='Saved garage could not be read. Purchases are paused to protect your save.'}
 function freshSave(){
   if(storageError)return false;
@@ -22,7 +26,7 @@ function applyCar(){
   const car=tunedCar(getCar(garageSave.selected),garageSave.tuning?.[garageSave.selected]);
   document.getElementById('playerCar').innerHTML=carArt(car);
   document.getElementById('heroCar').innerHTML=carArt(car);
-  document.getElementById('cpuCar').innerHTML=carArt(getCar('starter-4'));
+  document.getElementById('cpuCar').innerHTML=carArt(getCar(championship?.opponentId()||'starter-4'));
   for(const id of ['playerCar','heroCar'])customizeCars(document.getElementById(id),garageSave);
   document.dispatchEvent(new CustomEvent('jd:vehicle',{detail:{acceleration:car.acceleration,topSpeed:car.topSpeed,nitroSeconds:car.nitroSeconds}}));
   menuStatus.innerHTML=`<span>DRIVING <b>${car.name}</b></span><span><b>${credits(garageSave.credits)}</b> CR</span>`;
@@ -123,12 +127,18 @@ dealerButton.onclick=()=>open('dealership');garageButton.onclick=()=>open('garag
 const rewardNotice=document.createElement('p');rewardNotice.className='garage-reward';rewardNotice.setAttribute('role','status');document.querySelector('#results .result .stats').after(rewardNotice);
 document.addEventListener('jd:race-start',()=>{freshSave();applyCar();rewardNotice.textContent=''});
 document.addEventListener('jd:race-finished',e=>{
+  const attempt=championship?.takeAttempt();
   if(!freshSave()){rewardNotice.textContent=storageError;return}
   const result=awardRace(garageSave,e.detail);
-  if(!result.reward){rewardNotice.textContent='NO CREDITS THIS TIME · WIN RACES TO EARN';return}
-  rewardNotice.textContent=persist(result.save)?`+${credits(result.reward)} CR WON · BALANCE ${credits(garageSave.credits)} CR`:storageError;
+  const progress=attempt?recordChampionshipWin(result.save,{...attempt,win:e.detail.win}):{save:result.save,newWin:false,licence:null};
+  if(!result.reward){rewardNotice.textContent='NO CREDITS THIS TIME · WIN RACES TO EARN';championship?.showResult(progress);return}
+  const saved=persist(progress.save);
+  rewardNotice.textContent=saved?`+${credits(result.reward)} CR WON · BALANCE ${credits(garageSave.credits)} CR`:storageError;
+  if(saved)championship?.showResult(progress);
 });
 // Preserve normal race key handling; showroom keys must not shift gears in the background.
 window.addEventListener('keydown',e=>{if(panel.classList.contains('hide'))return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyQ','KeyE','KeyW'].includes(e.code))e.stopImmediatePropagation()},true);
 createTuneShop({getSave:()=>garageSave,getError:()=>storageError,freshSave,persist});
+championship=createChampionship({getSave:()=>garageSave,getError:()=>storageError,freshSave,persist});
+createHowToPlay();
 applyCar();
