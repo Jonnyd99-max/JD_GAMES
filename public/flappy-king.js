@@ -21,7 +21,7 @@ const find=s=>panel.querySelector(s),canvas=find('#fk-canvas'),ctx=canvas.getCon
 const overlay=find('.fk-overlay'),menuView=find('.fk-menu'),playView=find('.fk-play');
 const card=document.createElement('button');card.className='card play flappy-card';card.id='flappy-king-card';
 card.innerHTML='<div class="fk-card-art"><canvas width="432" height="170" role="img" aria-label="A flying pixel-art king"></canvas></div><small>02 / ROYAL RESCUE</small><h2>FLAPPY KING</h2><p>FLAP • DODGE • RESCUE</p><strong>PLAY NOW →</strong>';
-document.querySelector('#home .games .soon')?.replaceWith(card);
+document.querySelector('#home .games > :nth-child(2)')?.replaceWith(card);
 card.addEventListener('click',enter);
 
 function sprite(context,name,x,y,w,h){

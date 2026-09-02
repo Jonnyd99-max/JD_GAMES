@@ -76,6 +76,11 @@
   flappyUrl.search=new URL(document.currentScript.src).search;
   flappyScript.type='module';flappyScript.src=flappyUrl.href;
   document.head.appendChild(flappyScript);
+  const badgeScript=document.createElement('script');
+  const badgeUrl=new URL('badge-breaker.js',document.currentScript.src);
+  badgeUrl.search=new URL(document.currentScript.src).search;
+  badgeScript.type='module';badgeScript.src=badgeUrl.href;
+  document.head.appendChild(badgeScript);
 
   // The scenery uses the same travelled metres as the race simulation.
   const track=document.querySelector('.track');
