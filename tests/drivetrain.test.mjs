@@ -5,4 +5,4 @@ test('selecting a gear does not change road speed',()=>{const speed=0;rpm(speed,
 test('redline speeds rise with every gear',()=>{assert.deepEqual(max.slice(1),[32,52,73,95,120])});
 test('1-2 shift preserves speed and drops rpm',()=>{const speed=30;assert.equal(speed,30);assert.ok(rpm(speed,2)<rpm(speed,1))});
 test('perfect shift band is 6200 through 6700 rpm',()=>{const perfect=r=>r>=6200&&r<=6700;assert.equal(perfect(6200),true);assert.equal(perfect(6700),true);assert.equal(perfect(6199),false);assert.equal(perfect(6701),false)});
-test('neutral-to-first launch rewards staged RPM only after green',()=>{const launch=(rpm,green)=>!green?0:rpm>=3000&&rpm<=4000?8:rpm>=2200?5:1.5;assert.equal(launch(3500,false),0);assert.equal(launch(3500,true),8);assert.equal(launch(1200,true),1.5)});
+test('neutral-to-first launch rewards staged RPM only after green',()=>{const launch=(rpm,green)=>!green?0:rpm>=3000&&rpm<=4000?12:rpm>=2200?8:3;assert.equal(launch(3500,false),0);assert.equal(launch(3500,true),12);assert.equal(launch(1200,true),3)});
