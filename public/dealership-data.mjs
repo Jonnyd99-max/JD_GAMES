@@ -1,4 +1,5 @@
-// Fictional cars, local-only credit economy, and the shared vector car renderer.
+import {cleanTune} from './tuning-data.mjs';
+// Fictional cars, local-only credit economy, and the shared pixel car renderer.
 export const CLASSES = [
   {id:'starter',name:'Starter',tag:'Every story starts here',description:'Lightweight street cars. Accessible, nimble, and ready for your first quarter mile.'},
   {id:'roadster',name:'Roadster',tag:'Open sky. Open throttle.',description:'Two seats, sculpted bodywork and a lighter touch. Your next step up from the street.'},
@@ -57,7 +58,8 @@ export function normaliseSave(raw){
   const input=raw&&typeof raw==='object'?raw:{};
   const owned=[...new Set([STARTER_ID,...(Array.isArray(input.owned)?input.owned:[])])].filter(id=>getCar(id));
   return {version:1,credits:Number.isSafeInteger(input.credits)&&input.credits>=0?input.credits:STARTING_CREDITS,
-    owned,selected:owned.includes(input.selected)?input.selected:STARTER_ID};
+    owned,selected:owned.includes(input.selected)?input.selected:STARTER_ID,
+    tuning:Object.fromEntries(owned.filter(id=>input.tuning?.[id]).map(id=>[id,cleanTune(input.tuning[id])]))};
 }
 export function purchaseCar(save,id){
   const car=getCar(id),current=normaliseSave(save);
@@ -81,6 +83,7 @@ export function sellCar(save,id){
   if(!car||!current.owned.includes(id))return {ok:false,error:'You do not own this car.'};
   if(id===STARTER_ID)return {ok:false,error:'Your original car stays in your garage.'};
   return {ok:true,save:{...current,credits:Math.min(Number.MAX_SAFE_INTEGER,current.credits+resaleValue(car)),
+    tuning:Object.fromEntries(Object.entries(current.tuning).filter(([key])=>key!==id)),
     owned:current.owned.filter(ownedId=>ownedId!==id),selected:current.selected===id?STARTER_ID:current.selected}};
 }
 export function awardRace(save,result){

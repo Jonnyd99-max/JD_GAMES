@@ -1,6 +1,9 @@
 // Loaded alongside the existing game; leaves the static entry point and saved race stats intact.
 const assetUrl=name=>{const url=new URL(name,import.meta.url);url.search=new URL(import.meta.url).search;return url.href};
 const {CLASSES,CARS,STARTER_ID,SAVE_KEY,getCar,credits,normaliseSave,purchaseCar,selectCar,sellCar,resaleValue,awardRace,carArt}=await import(assetUrl('dealership-data.mjs'));
+const {tunedCar}=await import(assetUrl('tuning-data.mjs'));
+const {customizeCars}=await import(assetUrl('car-customizer.mjs'));
+const {createTuneShop}=await import(assetUrl('tune-shop.js'));
 const css=document.createElement('link');css.rel='stylesheet';css.href=assetUrl('dealership.css');document.head.appendChild(css);
 
 let garageSave=normaliseSave(),storageError='',activeClass='starter',selectedId=STARTER_ID,garageId=STARTER_ID,mode='dealership';
@@ -16,11 +19,12 @@ function persist(next){
   catch{storageError='Your browser could not save this change. No credits or cars were changed.';return false}
 }
 function applyCar(){
-  const car=getCar(garageSave.selected);
+  const car=tunedCar(getCar(garageSave.selected),garageSave.tuning?.[garageSave.selected]);
   document.getElementById('playerCar').innerHTML=carArt(car);
   document.getElementById('heroCar').innerHTML=carArt(car);
   document.getElementById('cpuCar').innerHTML=carArt(getCar('starter-4'));
-  document.dispatchEvent(new CustomEvent('jd:vehicle',{detail:{acceleration:car.acceleration,topSpeed:car.topSpeed}}));
+  for(const id of ['playerCar','heroCar'])customizeCars(document.getElementById(id),garageSave);
+  document.dispatchEvent(new CustomEvent('jd:vehicle',{detail:{acceleration:car.acceleration,topSpeed:car.topSpeed,nitroSeconds:car.nitroSeconds}}));
   menuStatus.innerHTML=`<span>DRIVING <b>${car.name}</b></span><span><b>${credits(garageSave.credits)}</b> CR</span>`;
 }
 const menu=document.querySelector('#menu .menu');
@@ -46,7 +50,7 @@ const owned=id=>garageSave.owned.includes(id);
 function announce(message){el('dealer-alert').textContent=storageError||message||''}
 function render(message=''){
   if(mode==='garage'&&!owned(garageId))garageId=garageSave.selected;
-  const car=getCar(mode==='garage'?garageId:selectedId),carClass=CLASSES.find(c=>c.id===car.classId);
+  const base=getCar(mode==='garage'?garageId:selectedId),car=owned(base.id)?tunedCar(base,garageSave.tuning?.[base.id]):base,carClass=CLASSES.find(c=>c.id===car.classId);
   const category=CLASSES.find(c=>c.id===activeClass);
   panel.classList.toggle('garage-mode',mode==='garage');
   el('dealer-balance').textContent=credits(garageSave.credits)+' CR';
@@ -76,6 +80,7 @@ function render(message=''){
   el('dealer-stock-count').textContent=stock.length+' CARS';
   el('dealer-stock').innerHTML=stock.map(c=>`<button class="dealer-car-card ${c.id===car.id?'is-selected':''}" data-car="${c.id}" aria-pressed="${c.id===car.id}"><span class="dealer-card-status">${garageSave.selected===c.id?'RACING':owned(c.id)?'OWNED':c.body.toUpperCase()}</span>${carArt(c)}<strong>${c.name}</strong><span>${owned(c.id)?'IN YOUR GARAGE':credits(c.price)+' CR'}</span></button>`).join('');
   panel.querySelectorAll('[data-class]').forEach(button=>{const isActive=button.dataset.class===activeClass;button.classList.toggle('is-active',isActive);button.setAttribute('aria-pressed',String(isActive))});
+  customizeCars(panel,garageSave);
   announce(message);
 }
 function open(modeToOpen){
@@ -125,4 +130,5 @@ document.addEventListener('jd:race-finished',e=>{
 });
 // Preserve normal race key handling; showroom keys must not shift gears in the background.
 window.addEventListener('keydown',e=>{if(panel.classList.contains('hide'))return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyQ','KeyE','KeyW'].includes(e.code))e.stopImmediatePropagation()},true);
+createTuneShop({getSave:()=>garageSave,getError:()=>storageError,freshSave,persist});
 applyCar();
