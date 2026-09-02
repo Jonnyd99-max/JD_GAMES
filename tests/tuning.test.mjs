@@ -14,6 +14,7 @@ test('invalid saved stages and paint are discarded',()=>{assert.deepEqual(cleanT
 test('nitro gives exactly two seconds per bottle and no idle consumption',()=>{for(const charge of [2,4]){let remaining=charge,totalBoost=0;for(let i=0;i<500;i++){const r=tickNitro(remaining,.017,true);totalBoost+=(r.multiplier-1)*.017;remaining=r.remaining}assert.equal(remaining,0);assert.ok(Math.abs(totalBoost-charge*.65)<1e-8);assert.equal(tickNitro(charge,60,false).remaining,charge)}});
 
 export function race(){
+ let clock=0;
  const elements=new Map(),handlers=new Map();
  const element=()=>({style:{setProperty(k,v){this[k]=v}},classList:{add(){},remove(){},toggle(){},contains(){return false}},innerHTML:'',textContent:'',offsetLeft:90,offsetWidth:300,clientWidth:1280,appendChild(){},after(){},insertBefore(){},setAttribute(){},setPointerCapture(){},querySelector(){return element()}});
  const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id)};
@@ -24,7 +25,8 @@ export function race(){
  dispatch({type:'jd:nitro-model',detail:{tick:tickNitro}});
  function vehicle(seconds=2){dispatch({type:'jd:vehicle',detail:{acceleration:1,topSpeed:120,nitroSeconds:seconds}})}
  vehicle();context.startRace();Object.assign(context.state,{phase:'GO',gear:1,speed:16,rpm:3500,time:1,launch:'PERFECT',gas:true,last:1000});
- return {context,dispatch,vehicle,step:t=>context.loop(t)};
+ context.performance.now=()=>clock;
+ return {context,dispatch,vehicle,step:t=>{clock=t;context.loop(t)}};
 }
 test('actual race loop applies boost to acceleration and spends only simulation time',()=>{const ordinary=race(),boosted=race();boosted.context.keys.add('KeyN');ordinary.step(1030);boosted.step(1030);assert.ok(boosted.context.state.speed>ordinary.context.state.speed);assert.ok(Math.abs(boosted.context.state.nitroRemaining-1.97)<1e-8);assert.equal(ordinary.context.state.nitroRemaining,2)});
 test('actual race loop does not burn nitro in neutral, pre-start, or off throttle',()=>{for(const change of [{gear:0},{phase:'READY'},{gas:false}]){const r=race();Object.assign(r.context.state,change);r.context.keys.add('KeyN');r.step(1030);assert.equal(r.context.state.nitroRemaining,2)}});
