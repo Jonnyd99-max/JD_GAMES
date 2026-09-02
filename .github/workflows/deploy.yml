@@ -15,7 +15,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Enable calibrated drivetrain
-        run: sed -i 's#</body>#<script src="./physics-v2.js"></script></body>#' dist/client/index.html
+        run: sed -i 's#</body>#<script src="./physics-v2.js?v=20260902-2"></script></body>#' dist/client/index.html
       - uses: actions/upload-pages-artifact@v3
         with: {path: dist/client}
   deploy:
