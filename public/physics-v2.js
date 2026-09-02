@@ -58,4 +58,42 @@
   style.textContent+=`.bar button{background:#222930;border:1px solid #707980;border-radius:4px;padding:6px 12px;color:#f3f5f6;font-weight:700}.cpu{opacity:1}.hud>div:nth-child(2){width:104px}.hud>div:nth-child(3){width:68px}@media(max-width:750px){.hud>div:nth-child(2){width:72px}.hud>div:nth-child(3){width:58px}#gear{width:58px}}`;
   // Anchor each car to its lane surface, independent of viewport width.
   style.textContent+=`.track{background:linear-gradient(#aebac2 0 25%,#929a9f 25% 34%,#353b40 34% 66%,#292e33 66% 100%)}.track:before{inset:0 0 75%}.track:after{top:25%;height:7%}.track .car{top:auto;bottom:3%;height:32%;width:auto;aspect-ratio:25/9;left:7%;filter:drop-shadow(0 4px 3px #0007)}.track .cpu{bottom:36%;height:28%;left:10%}.car svg{display:block;width:100%;height:100%}.road{bottom:33%;height:3px;opacity:.65}`;
+  // The scenery uses the same travelled metres as the race simulation.
+  const track=document.querySelector('.track');
+  const road=document.querySelector('.road');
+  const finishLine=document.createElement('div');
+  finishLine.className='finish-line';
+  finishLine.innerHTML='<span>FINISH</span>';
+  track.appendChild(finishLine);
+  // Four times the visual travel, with one shared scale for all road objects.
+  const finishDistance=402.336,metresToPixels=28;
+  style.textContent+=`.road{animation:none!important;transform:none!important;left:0;width:100%;background-position-x:var(--road-offset,0px)}.finish-line{position:absolute;top:34%;bottom:0;width:24px;z-index:2;pointer-events:none;background:conic-gradient(#f4f4ee 25%,#151a1e 0 50%,#f4f4ee 0 75%,#151a1e 0) 0 0/24px 24px;border-left:2px solid #fff;border-right:2px solid #fff;box-shadow:0 0 8px #0006}.finish-line span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding:5px 10px;background:#111a20;color:#fff;font-size:12px;font-weight:900;letter-spacing:2px;border:1px solid #fff}.finish-line[hidden]{display:none}`;
+  const renderRoad=()=>{
+    const distance=state.dist||0;
+    road.style.setProperty('--road-offset',`${-((distance*metresToPixels)%130)}px`);
+    const playerNose=playerCar.offsetLeft+playerCar.offsetWidth*.962;
+    const x=playerNose+(finishDistance-distance)*metresToPixels;
+    finishLine.style.left=`${x}px`;
+    finishLine.hidden=x>track.clientWidth+50||x< -50;
+    // Keep the opponent in the same moving world as the player and finish.
+    const cpuNose=cpuCar.offsetLeft+cpuCar.offsetWidth*.962;
+    cpuCar.style.transform=`translateX(${playerNose-cpuNose+((state.cpu||0)-distance)*metresToPixels}px)`;
+  };
+  let finishTimer;
+  const startWithPhysics=startRace,finishWithResults=finish,menuWithPhysics=showMenu;
+  startRace=()=>{clearTimeout(finishTimer);cancelAnimationFrame(raf);startWithPhysics();renderRoad()};
+  showMenu=()=>{clearTimeout(finishTimer);menuWithPhysics()};
+  finish=()=>{
+    state.phase='FINISHED';
+    state.dist=finishDistance;
+    renderRoad();
+    feedback('FINISH!');
+    // Hold the crossing briefly so it is visible before showing the results.
+    const completedRace=state;
+    finishTimer=setTimeout(()=>{if(state===completedRace&&state.phase==='FINISHED')finishWithResults()},850);
+  };
+  const loopWithPhysics=loop;
+  loop=t=>{loopWithPhysics(t);renderRoad()};
+  addEventListener('resize',renderRoad);
+  renderRoad();
 })();
