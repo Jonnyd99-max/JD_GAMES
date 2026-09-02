@@ -61,8 +61,8 @@ test('buy-sell cycle costs credits and double sell fails',()=>{
   const sold=sellCar(purchaseCar(normaliseSave(),'starter-1').save,'starter-1');
   assert.ok(sold.save.credits<STARTING_CREDITS);assert.equal(sellCar(sold.save,'starter-1').ok,false);
 });
-test('only winning races award credits, including clean-driving bonuses',()=>{
-  assert.equal(raceReward({win:false,perfect:4,launch:'PERFECT'}),0);
+test('completed losses pay a quarter prize; wins retain clean-driving bonuses',()=>{
+  assert.equal(raceReward({win:false,perfect:4,launch:'PERFECT'}),375);
   assert.equal(raceReward({win:true}),1500);
   assert.equal(raceReward({win:true,perfect:3,launch:'PERFECT'}),2100);
   assert.equal(awardRace(normaliseSave(),{win:true}).save.credits,11500);

@@ -45,11 +45,14 @@ export function advanceRace(state,dt,previousDistance,profile){
  const speed=t=>t<profile.reaction?0:Math.min(profile.topSpeed,profile.launch+Math.max(0,t-profile.reaction)*profile.acceleration);
  state.cpu=beforeCpu+(speed(previousTime)+speed(previousTime+dt))*.5*.44704*dt;
  state.time=previousTime+dt;
- const end=402.336;if(state.dist<end&&state.cpu<end)return null;
- const playerFraction=state.dist>=end?(end-previousDistance)/Math.max(1e-9,state.dist-previousDistance):Infinity;
- const cpuFraction=state.cpu>=end?(end-beforeCpu)/Math.max(1e-9,state.cpu-beforeCpu):Infinity;
- const won=playerFraction<cpuFraction,part=Math.max(0,Math.min(1,won?playerFraction:cpuFraction));
- state.dist=previousDistance+(state.dist-previousDistance)*part;state.cpu=beforeCpu+(state.cpu-beforeCpu)*part;state.time=previousTime+dt*part;
- if(won)state.dist=end;else state.cpu=Math.max(end,state.dist+1e-7);
+ const end=402.336;
+ // Record the CPU's crossing once, but keep the player's race and controls live.
+ if(state.cpuFinishTime===undefined&&state.cpu>=end){const fraction=Math.max(0,Math.min(1,(end-beforeCpu)/Math.max(1e-9,state.cpu-beforeCpu)));state.cpuFinishTime=previousTime+dt*fraction}
+ if(state.dist<end)return null;
+ const part=Math.max(0,Math.min(1,(end-previousDistance)/Math.max(1e-9,state.dist-previousDistance)));
+ state.playerFinishTime=previousTime+dt*part;
+ const won=state.cpuFinishTime===undefined||state.playerFinishTime<state.cpuFinishTime;
+ state.cpu=beforeCpu+(state.cpu-beforeCpu)*part;state.time=state.playerFinishTime;state.dist=end;
+ if(!won)state.cpu=Math.max(state.cpu,end+1e-7);
  return won;
 }

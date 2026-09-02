@@ -6,6 +6,7 @@ const {customizeCars}=await import(assetUrl('car-customizer.mjs'));
 const {createTuneShop}=await import(assetUrl('tune-shop.js'));
 const {createChampionship}=await import(assetUrl('championship.js'));
 const {createHowToPlay}=await import(assetUrl('how-to-play.js'));
+const {installGameAudio}=await import(assetUrl('game-audio.mjs'));
 const {recordChampionshipWin}=await import(assetUrl('championship-data.mjs'));
 const css=document.createElement('link');css.rel='stylesheet';css.href=assetUrl('dealership.css');document.head.appendChild(css);
 
@@ -78,7 +79,7 @@ function render(message=''){
     if(mode==='garage'&&car.id!==STARTER_ID)action('SELL CAR · '+credits(resaleValue(car))+' CR','sell',!!storageError,true);
   }else action(garageSave.credits>=car.price?'BUY & SELECT →':'NEED '+credits(car.price-garageSave.credits)+' MORE CR','buy',garageSave.credits<car.price||!!storageError);
   if(mode==='garage')action('VISIT DEALERSHIP →','dealership',false,true);
-  el('dealer-purchase-note').textContent=mode==='garage'?'Resale is 60% of the original price. Selling your selected car returns you to the JD-R S1.':'Wins earn 1,500 CR, plus clean-driving bonuses. Buying a car selects it for your next race.';
+  el('dealer-purchase-note').textContent=mode==='garage'?'Resale is 60% of the original price. Selling your selected car returns you to the JD-R S1.':'Win prizes rise from 1,500 to 7,500 CR through the championships, plus clean-driving bonuses. Buying a car selects it for your next race.';
   el('dealer-stock-title').textContent=mode==='garage'?'YOUR OWNED CARS':'CHOOSE YOUR '+category.name.toUpperCase();
   const stock=mode==='garage'?CARS.filter(c=>owned(c.id)):CARS.filter(c=>c.classId===activeClass);
   el('dealer-stock-count').textContent=stock.length+' CARS';
@@ -104,6 +105,7 @@ el('dealer-confirm-submit').addEventListener('click',()=>{
   if(!freshSave()){dialog.close();render();return}
   const result=task.type==='buy'?purchaseCar(garageSave,task.id):sellCar(garageSave,task.id);
   const succeeded=result.ok&&persist(result.save);
+  if(succeeded&&task.type==='buy')document.dispatchEvent(new CustomEvent('jd:purchase'));
   dialog.close();
   render(succeeded?(task.type==='buy'?getCar(task.id).name+' purchased and selected.':getCar(task.id).name+' sold for '+credits(resaleValue(getCar(task.id)))+' CR.'):result.error||storageError);
   panel.querySelector('.dealer-actions button:not(:disabled)')?.focus();
@@ -129,11 +131,10 @@ document.addEventListener('jd:race-start',()=>{freshSave();applyCar();rewardNoti
 document.addEventListener('jd:race-finished',e=>{
   const attempt=championship?.takeAttempt();
   if(!freshSave()){rewardNotice.textContent=storageError;return}
-  const result=awardRace(garageSave,e.detail);
+  const result=awardRace(garageSave,{...e.detail,opponentId:attempt?.opponentId});
   const progress=attempt?recordChampionshipWin(result.save,{...attempt,win:e.detail.win}):{save:result.save,newWin:false,licence:null};
-  if(!result.reward){rewardNotice.textContent='NO CREDITS THIS TIME · WIN RACES TO EARN';championship?.showResult(progress);return}
   const saved=persist(progress.save);
-  rewardNotice.textContent=saved?`+${credits(result.reward)} CR WON · BALANCE ${credits(garageSave.credits)} CR`:storageError;
+  rewardNotice.textContent=saved?`+${credits(result.reward)} CR ${e.detail.win?'WON':'FINISH REWARD (25%)'} · BALANCE ${credits(garageSave.credits)} CR`:storageError;
   if(saved)championship?.showResult(progress);
 });
 // Preserve normal race key handling; showroom keys must not shift gears in the background.
@@ -141,4 +142,5 @@ window.addEventListener('keydown',e=>{if(panel.classList.contains('hide'))return
 createTuneShop({getSave:()=>garageSave,getError:()=>storageError,freshSave,persist});
 championship=createChampionship({getSave:()=>garageSave,getError:()=>storageError,freshSave,persist});
 createHowToPlay();
+installGameAudio();
 applyCar();

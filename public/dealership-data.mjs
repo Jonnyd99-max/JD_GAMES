@@ -79,9 +79,15 @@ export function selectCar(save,id){
   if(!current.owned.includes(id))return {ok:false,error:'Purchase this car before selecting it.'};
   return {ok:true,save:{...current,selected:id}};
 }
-export function raceReward({win=false,perfect=0,launch=''}){
-  if(!win)return 0;
-  return 1500+Math.min(5,Math.max(0,Math.floor(Number(perfect)||0)))*100+(launch==='PERFECT'?300:0);
+export function racePrize(opponentId){
+ const opponent=getCar(opponentId);if(!opponent)return 1500;
+ const classIndex=CLASSES.findIndex(c=>c.id===opponent.classId);
+ return 1500+(classIndex*5+opponent.variant)*250;
+}
+export function raceReward({win=false,perfect=0,launch='',opponentId}){
+  const base=racePrize(opponentId);
+  if(!win)return Math.floor(base*.25);
+  return base+Math.min(5,Math.max(0,Math.floor(Number(perfect)||0)))*100+(launch==='PERFECT'?300:0);
 }
 export const resaleValue=car=>Math.floor(car.price*.6);
 export function sellCar(save,id){

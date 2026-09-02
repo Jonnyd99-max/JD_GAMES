@@ -55,7 +55,9 @@ test('a new race requests the selected garage car',()=>{
   const s=scene();vm.runInContext('startRace()',s.context);
   assert.equal(s.events[0].type,'jd:race-start');
 });
-test('opponent victory preserves the actual player position and records a loss',()=>{
+test('opponent victory cannot finish or reward the race before the player crosses',()=>{
  const s=scene();Object.assign(s.context.state,{phase:'GO',dist:250,cpu:402.336,raceWin:false});
- vm.runInContext('finish()',s.context);assert.equal(s.context.state.dist,250);assert.equal(s.events[0].detail.win,false);
+ vm.runInContext('finish()',s.context);assert.equal(s.context.state.dist,250);assert.equal(s.events.length,0);
+ s.context.state.dist=402.336;s.context.state.cpu=600;vm.runInContext('finish();finish()',s.context);
+ assert.equal(s.events.length,1);assert.equal(s.events[0].detail.win,false);
 });
