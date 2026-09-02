@@ -70,6 +70,12 @@
   dealershipUrl.search=new URL(document.currentScript.src).search;
   dealershipScript.type='module';dealershipScript.src=dealershipUrl.href;
   document.head.appendChild(dealershipScript);
+  // Separate game module: no garage or drivetrain state is shared.
+  const flappyScript=document.createElement('script');
+  const flappyUrl=new URL('flappy-king.js',document.currentScript.src);
+  flappyUrl.search=new URL(document.currentScript.src).search;
+  flappyScript.type='module';flappyScript.src=flappyUrl.href;
+  document.head.appendChild(flappyScript);
 
   // The scenery uses the same travelled metres as the race simulation.
   const track=document.querySelector('.track');
