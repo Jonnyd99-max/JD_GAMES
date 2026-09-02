@@ -17,6 +17,7 @@
   const hints=document.createElement('div');hints.className='key-hints';hints.innerHTML='<span><kbd>←</kbd><kbd>→</kbd><b>CHANGE GEARS</b></span><span><kbd>SPACE</kbd><b>HOLD THROTTLE</b></span>';
   const touch=document.querySelector('.touch');touch.insertBefore(hints,pedal);
   style.textContent+=`.key-hints{margin-left:auto;margin-right:14px;align-self:center;display:grid;gap:8px}.key-hints span{display:flex;align-items:center;justify-content:flex-end;gap:5px}.key-hints kbd{min-width:34px;padding:7px 9px;text-align:center;background:#18212b;border:1px solid #596675;border-bottom-width:3px;border-radius:6px;font-weight:900}.key-hints b{width:78px;color:#a8b2bf;font-size:9px;letter-spacing:1px}.pedal.throttling{filter:brightness(.78);transform:translateY(4px);box-shadow:0 0 24px #ff531777}@media(max-width:720px){.key-hints{display:none}}`;
+  style.textContent+='@media(max-width:720px){.key-hints{display:grid!important;margin-right:4px;transform:scale(.72);transform-origin:right center}.key-hints b{width:62px}.key-hints kbd{min-width:28px;padding:5px}}';
   const setThrottle=active=>{state.gas=active;pedal.classList.toggle('throttling',active)};
   pedal.onpointerdown=e=>{e.preventDefault();pedal.setPointerCapture(e.pointerId);setThrottle(true)};
   pedal.onpointerup=pedal.onpointercancel=e=>{e.preventDefault();setThrottle(false)};
