@@ -9,15 +9,17 @@ function scene(){
   const road={style:{setProperty(name,value){this[name]=value}}};
   const line={style:{},hidden:false};
   const track={clientWidth:1280,appendChild(){}};
+  const events=[],timers=[];
   const context=vm.createContext({
-    document:{querySelector:s=>s==='.track'?track:road,createElement:()=>line},
+    document:{querySelector:s=>s==='.track'?track:road,createElement:()=>line,dispatchEvent:e=>events.push(e)},
+    CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail}},
     state:{dist:0,cpu:0},style:{textContent:''},
     playerCar:{offsetLeft:90,offsetWidth:300},cpuCar:{offsetLeft:120,offsetWidth:260,style:{}},
     startRace(){},finish(){},showMenu(){},loop(){},raf:0,
-    clearTimeout(){},cancelAnimationFrame(){},setTimeout(){},feedback(){},addEventListener(){},
+    clearTimeout(){},cancelAnimationFrame(){},setTimeout:fn=>timers.push(fn),feedback(){},addEventListener(){},
   });
   vm.runInContext(block,context);
-  return {context,road,line,render:(d,cpu=d)=>{context.state.dist=d;context.state.cpu=cpu;vm.runInContext('renderRoad()',context)}};
+  return {context,road,line,events,timers,render:(d,cpu=d)=>{context.state.dist=d;context.state.cpu=cpu;vm.runInContext('renderRoad()',context)}};
 }
 
 test('road is stationary at zero distance, even when revving',()=>{
@@ -41,4 +43,15 @@ test('opponent position follows relative race distance',()=>{
   const s=scene();s.render(100,100);const equal=s.context.cpuCar.style.transform;
   s.render(200,200);assert.equal(s.context.cpuCar.style.transform,equal);
   s.render(200,210);assert.notEqual(s.context.cpuCar.style.transform,equal);
+});
+test('race completion emits a single dealership reward event',()=>{
+  const s=scene();Object.assign(s.context.state,{phase:'GO',dist:402.336,cpu:399,perfect:2,launch:'PERFECT'});
+  vm.runInContext('finish();finish()',s.context);
+  assert.equal(s.events.length,1);assert.equal(s.events[0].type,'jd:race-finished');
+  assert.equal(s.events[0].detail.win,true);assert.equal(s.events[0].detail.perfect,2);
+  assert.equal(s.timers.length,1);
+});
+test('a new race requests the selected garage car',()=>{
+  const s=scene();vm.runInContext('startRace()',s.context);
+  assert.equal(s.events[0].type,'jd:race-start');
 });
